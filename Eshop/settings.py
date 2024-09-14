@@ -103,6 +103,33 @@ REST_FRAMEWORK={
     )
 }
 
+
+
+# CELERY SETTINGS
+
+# The URL of the broker that Celery will use. Redis is commonly used.
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+
+# Store task results in Redis so that tasks can be tracked.
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
+# Ensure that Celery accepts JSON-formatted data for tasks.
+CELERY_ACCEPT_CONTENT = ['json']
+
+# Task serializer format (use JSON).
+CELERY_TASK_SERIALIZER = 'json'
+
+# Result serializer format (use JSON).
+CELERY_RESULT_SERIALIZER = 'json'
+
+# Timezone settings (optional, but useful if you're working with time-sensitive tasks).
+CELERY_TIMEZONE = 'UTC'
+
+# Enable task result expiration (in seconds). You can configure how long you want to keep task results.
+CELERY_TASK_RESULT_EXPIRES = 3600  # 1 hour
+
+
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=20),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
