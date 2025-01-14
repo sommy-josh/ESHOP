@@ -55,26 +55,47 @@ class CartItem(models.Model):
     def __str__(self):
         return f"{self.quantity} of {self.product.name} in cart"
     
+class OrderStatus(models.TextChoices):
+    PROCESSING='Processing'
+    SHIPED='Shipped'
+    DELIVERED='Delivererd'
+    
+class PaymentStatus(models.TextChoices):
+    PAID='PAID'
+    UNPAID='UNPAID'
+
+class PaymentMode(models.TextChoices):
+    COD='COD'
+    CARD='CARD'
+    UNPAID='UNPAID'
 
 class Order(models.Model):
-
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
-    created_at=models.DateTimeField(auto_now_add=True)
+    street=models.CharField(max_length=500, default="", blank=False)
+    city=models.CharField(max_length=100, default="",blank=False)
+    state=models.CharField(max_length=100, default="", blank=False)
+    country=models.CharField(max_length=100, default="", blank=False)
+    zip_code=models.CharField(max_length=100, default="", blank=False)
+    phone_no=models.CharField(max_length=100, default="",blank=False)
+    user=models.ForeignKey(User,on_delete=models.SET_NULL,null=True)
+    # created_at=models.DateTimeField(auto_now_add=True)
     total_price=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
-    status=models.CharField(max_length=50, default='Pending')
+    payment_status=models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.UNPAID)
+    status=models.CharField(max_length=50, choices=OrderStatus.choices, default=OrderStatus.PROCESSING)
+    payment_mode=models.CharField(max_length=50, choices=PaymentMode.choices, default=PaymentMode.COD)
 
     def __str__(self):
         return f"Order {self.id} by {self.user.username}"
     
 
 class OrderItem(models.Model):
-    order=models.ForeignKey(Order, related_name="items",on_delete=models.CASCADE)
-    product=models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity=models.PositiveIntegerField()
-    price=models.DecimalField(max_digits=10, decimal_places=2)
+    order=models.ForeignKey(Order, related_name="orderitems",on_delete=models.CASCADE, null=True)
+    product=models.ForeignKey(Product, on_delete=models.SET_NULL,null=True)           
+    name=models.CharField(max_length=200, default="", blank=False)                  
+    quantity=models.IntegerField(default=1)
+    price=models.DecimalField(max_digits=7, decimal_places=2, blank=False)
 
     def __str__(self):
-        return f"{self.quantity} x {self.product.name}"
+        return f"{self.quantity} x {self.name}"
     
     def get_total_item_price(self):
         return self.quantity * self.price

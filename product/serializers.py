@@ -31,31 +31,15 @@ class CartSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model=OrderItem
-        fields=['id', 'quantity','price']
+        fields="__all__"
 
 class OrderSerializer(serializers.ModelSerializer):
-    items=OrderItemSerializer(many=True)
+    orderitems=serializers.SerializerMethodField(method_name='get_order_items',read_only=True)
     class Meta:
         model=Order
-        fields=['id', 'user','created_at' 'total_price','status', 'items']
+        fields="__all__"
+    def get_order_items(self, obj):
+        order_items=obj.orderitems.all()
+        serializer=OrderItemSerializer(order_items,many=True)
+        return serializer.data
 
-        def create(self, validated_data):
-            items_data=validated_data.pop('items')
-            order=Order.objects.create(**validated_data)
-            total_price=0
-            
-            for item_data in items_data:
-                product=item_data['product']
-                quantity=item_data['quantity']
-                price=product.price *quantity
-                total_price +=price
-
-                OrderItem.objects.create(order=order, product=product, quantity=quantity, price=price)
-
-                #reduce stock
-                product.stock -= quantity
-                product.save()
-
-            order.total_price =total_price
-            order.save()
-            return order

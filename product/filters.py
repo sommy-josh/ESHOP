@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import Product
+from .models import Product, Order
 
 
 class ProductsFilter(filters.FilterSet):
@@ -10,3 +10,8 @@ class ProductsFilter(filters.FilterSet):
 
         model=Product
         fields=('keyword', 'category', 'brand', 'min_price', 'max_price')
+
+class OrderFilter(filters.FilterSet):
+    class Meta:
+        model=Order
+        fields=('status', 'payment_status','payment_mode')
