@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product,Review,Cart,CartItem,Order,OrderItem
+from .models import Product,Review,Cart,CartItem,Order,OrderItem,Payment
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,3 +43,10 @@ class OrderSerializer(serializers.ModelSerializer):
         serializer=OrderItemSerializer(order_items,many=True)
         return serializer.data
 
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'user', 'amount', 'currency', 'reference', 'status', 'created_at']
+        read_only_fields = ['id', 'reference', 'status', 'created_at']

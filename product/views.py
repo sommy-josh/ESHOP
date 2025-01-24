@@ -1,17 +1,23 @@
 from django.shortcuts import render,get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes,action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from .filters import ProductsFilter,OrderFilter
 from rest_framework import status
 from .serializers import CartSerializer, CartItemSerializer,OrderItemSerializer,OrderSerializer,ReviewSerializer
-from .serializers import ProductSerializer
-from .models import Product,CartItem,Cart,Order,OrderItem,Review
+from .serializers import ProductSerializer,PaymentSerializer
+from .models import Product,CartItem,Cart,Order,OrderItem,Review,Payment
 from rest_framework.generics import RetrieveAPIView, DestroyAPIView
 from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.views import APIView
 from rest_framework import generics, permissions
-
+# import stripe
+from django.core.mail import send_mail
+import os
+import requests
+from django.conf import settings
+from uuid import uuid4
+# import requests
 
 
 # Create your views here.
@@ -127,15 +133,6 @@ class RemoveCartItemView(DestroyAPIView):
         except CartItem.DoesNotExist:
             return Response({"error": "Item not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
-# class OrderCreateView(generics.CreateAPIView):
-#     queryset=Order.objects.all()
-#     serializer_class=OrderSerializer
-#     permission_classes=[permissions.IsAuthenticated]
-
-#     def perform_create(self, serializer):
-#         serializer.save(user=self.request.user)
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def new_order(request):
@@ -201,7 +198,6 @@ def get_order(request,pk):
     return Response({'order':serializer.data},status=status.HTTP_200_OK)
 
 
-
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated,IsAdminUser])
 def process_order(request, pk):
@@ -212,21 +208,13 @@ def process_order(request, pk):
     return Response({'order': serializer.data})
 
 
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_order(request, pk):
     order=get_object_or_404(Order,id=pk)
     order.delete()
     return Response({"details": "Order is deleted successfully"})
-
-
-# class OrderDetailView(generics.RetrieveAPIView):
-#     queryset=Order.objects.all()
-#     serializer_class=OrderSerializer
-#     permission_classes=[permissions.IsAuthenticated]
-
-#     def get_queryset(self):
-#         return Order.objects.filter(user=self.request.user)
 
 
 
@@ -280,3 +268,80 @@ def delete_review(request, pk):
         return Response({"message": " you are not authorized to delete this review"})
     review.delete()
     return Response({"message":"Review deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+#paystack payment implementation
+
+@api_view(['POST'])
+def initialize_payment(request):
+    """
+    Initialize a payment with Paystack.
+    """
+    user = request.user
+    amount = request.data.get('amount')  # Amount in Naira
+
+    if not amount:
+        return Response({"error": "Amount is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Convert amount to kobo
+    amount_in_kobo = int(float(amount) * 100)
+    reference = str(uuid4())  # Generate unique transaction reference
+
+    # Save transaction in the database
+    transaction = Payment.objects.create(
+        user=user, amount=amount, reference=reference
+    )
+
+    # Initialize payment with Paystack
+    url = "https://api.paystack.co/transaction/initialize"
+    headers = {
+        "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "email": user.email,
+        "amount": amount_in_kobo,
+        "reference": reference
+    }
+
+    response = requests.post(url, json=payload, headers=headers)
+    response_data = response.json()
+
+    if response.status_code == 200:
+        return Response({"payment_url": response_data['data']['authorization_url']})
+    else:
+        return Response(response_data, status=response.status_code)
+
+
+@api_view(['GET'])
+def verify_payment(request, reference):
+    """
+    Verify a payment with Paystack.
+    """
+    url = f"https://api.paystack.co/transaction/verify/{reference}"
+    headers = {"Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}"}
+    response = requests.get(url, headers=headers)
+    response_data = response.json()
+
+    try:
+        transaction = Payment.objects.get(reference=reference)
+    except Payment.DoesNotExist:
+        return Response({"error": "Transaction not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    if response.status_code == 200 and response_data['data']['status'] == "success":
+        transaction.status = "success"
+        transaction.save()
+
+        # Send receipt to the user
+        send_mail(
+            subject="Payment Receipt",
+            message=f"Thank you for your payment of NGN {transaction.amount}. Your transaction reference is {transaction.reference}.",
+            from_email="chisomiheanacho404@gmail.com",
+            recipient_list=[transaction.user.email],
+        )
+
+        return Response({"message": "Payment verified successfully."})
+    else:
+        transaction.status = "failed"
+        transaction.save()
+        return Response({"error": "Payment verification failed."}, status=response.status_code)

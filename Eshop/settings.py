@@ -50,6 +50,10 @@ INSTALLED_APPS = [
 
 ]
 
+PAYSTACK_PUBLIC_KEY = "pk_test_8fd26e11dafc2c56b893b1414e9fdf97bb0efe16"
+PAYSTACK_SECRET_KEY = "sk_test_1af2711c0f49f01025b7e3c6d55bb122a1032aba"
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
