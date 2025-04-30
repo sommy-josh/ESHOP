@@ -1,6 +1,7 @@
 feature-rich E-Commerce RESTful API built with Django Rest Framework. This API supports user registration with JWT authentication, product management, shopping cart, order processing, and email notifications using Gmail SMTP. It uses PostgreSQL as the database and is tested with Postman.
 
 Features
+
 User Registration & Authentication (JWT)
 
 Email confirmation on registration using Gmail SMTP
