@@ -10,6 +10,7 @@ def send_admin_registration_email(username, email):
         f'New User registered: {username}, email: {email}',
         'chisomzzy1@gmail.com',  # From email
         ['chisomzzy1@gmail.com'],  # Admin email
+        fail_silently=False,
     )
 
 @shared_task
