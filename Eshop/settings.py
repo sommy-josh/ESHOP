@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 import os
+
 from pathlib import Path
 #setting the environment variable
 import dotenv
@@ -28,8 +29,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG') =='True'
-# DEBUG=False
+
+DEBUG=False
 
 ALLOWED_HOSTS = ['*']
 
@@ -50,6 +51,13 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
 ]
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 PAYSTACK_PUBLIC_KEY = "pk_test_8fd26e11dafc2c56b893b1414e9fdf97bb0efe16"
 PAYSTACK_SECRET_KEY = "sk_test_1af2711c0f49f01025b7e3c6d55bb122a1032aba"
@@ -92,16 +100,19 @@ WSGI_APPLICATION = 'Eshop.wsgi.application'
 
 
 # configuring the postgresql database using the info in the .env file
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DATABASE_NAME'),
-        'USER': os.environ.get('DATABASE_USER'),
-        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
-        'HOST': os.environ.get('DATABASE_HOST'),
-        'PORT': os.environ.get('DATABASE_PORT'),
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.environ.get('DATABASE_NAME'),
+#         'USER': os.environ.get('DATABASE_USER'),
+#         'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
+#         'HOST': os.environ.get('DATABASE_HOST'),
+#         'PORT': os.environ.get('DATABASE_PORT'),
+#     }
+# }
+
+
+
 # This is for the custom exception handling 
 REST_FRAMEWORK={
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -191,6 +202,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
