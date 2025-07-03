@@ -21,7 +21,7 @@ from django.urls import path, re_path
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
-
+from django.http import HttpResponse
 # Swagger schema configuration
 schema_view = get_schema_view(
     openapi.Info(
@@ -37,9 +37,13 @@ schema_view = get_schema_view(
 )
 
 
+def home(request):
+    return HttpResponse("🎉 Your Django app is live on Render!")
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-
+    path('', home), 
     # Swagger & ReDoc URLs
     re_path(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     re_path(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
