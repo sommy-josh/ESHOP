@@ -114,12 +114,14 @@ WSGI_APPLICATION = 'Eshop.wsgi.application'
 
 
 # This is for the custom exception handling 
-REST_FRAMEWORK={
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ]
 }
-
 
 
 # CELERY SETTINGS
