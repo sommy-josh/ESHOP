@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG=False
 
-ALLOWED_HOSTS = ['https://eshop-3-ss1a.onrender.com']
+ALLOWED_HOSTS = ['https://eshop-2-e7ib.onrender.com']
 
 
 # Application definition
