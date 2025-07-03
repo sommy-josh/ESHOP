@@ -65,7 +65,6 @@ PAYSTACK_SECRET_KEY = "sk_test_1af2711c0f49f01025b7e3c6d55bb122a1032aba"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
