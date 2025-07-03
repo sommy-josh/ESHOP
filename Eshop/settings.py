@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG=False
 
-ALLOWED_HOSTS = ['eshop-2-e7ib.onrender.com', 'localhost']
+ALLOWED_HOSTS = ['eshop-2-e7ib.onrender.com', '127.0.0.1','localhost']
 
 
 
